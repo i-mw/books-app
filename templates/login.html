@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="google-signin-scope" content="openid email">
+  <meta name="google-signin-client_id" content="150625342836-362i0s186aqmhuf06du3eoogs2t40qna.apps.googleusercontent.com">
+  <script src="//apis.google.com/js/platform.js" async defer></script>
+</head>
+<body>
+  <div class="g-signin2"
+    data-onsuccess="onSignIn"
+    data-onfailure="onSignInFailure"
+
+    data-cookiepolicy="single_host_origin"
+    data-redirecturi="postmessage"
+    data-accesstype="offline"
+    data-approvalprompt="force">
+  </div>
+  <div id="result"></div>
+
+  <script>
+    function onSignIn(googleUser) {
+      document.querySelector('.g-signin2').style.display = "none";
+      let resultCont = document.getElementById('result')
+
+      console.log(googleUser);
+      console.log(googleUser.code); // the only property on the object for the first time, after that it doesn't exist
+      //these are existed on refresh only, second time
+      // console.log(googleUser.getAuthResponse());
+      // console.log(googleUser.getBasicProfile());
+
+      if (googleUser.code) {
+        fetch('/gconnect?state={{STATE}}', {
+          method: 'POST',
+          headers: {
+            "content-type": "application/octet-stream; charset=utf-8",
+          },
+          body: googleUser.code
+        })
+        .then(function(response) {
+          if (response.status == 200) {
+            return response.text()
+          } else {
+            console.log(response.statusText)
+          }
+        })
+        .then(function(respBody) {
+          result.innerHTML = "Login successful <br>" + respBody + "<br> redirecting...";
+            setTimeout(function() {
+              window.location.href="/"
+            }, 4000)
+        })
+        .catch(function(error) {
+        })
+      }
+    }
+
+    function onSignInFailure(response) {
+      console.log('-------response-------')
+      console.log(response) // the only property right there
+    }
+  </script>
+</body>
+</html>
