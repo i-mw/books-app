@@ -330,4 +330,4 @@ def list_one_item(restaurant_id, menu_id):
 if __name__ == '__main__':
     app.secret_key = 'momo'
     app.debug = True
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0', port=8000)
