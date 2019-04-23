@@ -16,8 +16,8 @@ class User(Base):
     picture = Column(String(250), nullable=False)
 
 
-class Restaurant(Base):
-    __tablename__ = 'restaurant'
+class Category(Base):
+    __tablename__ = 'category'
 
     name = Column(String(250), nullable=False)
     id = Column(Integer, primary_key=True)
@@ -28,20 +28,20 @@ class Restaurant(Base):
     def serialize(self):
         return {
             'name': self.name,
-            'id': self.id
+            'id': self.id,
+            'user_id': self.user_id
         }
 
 
-class MenuItem(Base):
-    __tablename__ = 'menu_item'
+class Book(Base):
+    __tablename__ = 'book'
 
     name = Column(String(250), nullable=False)
     id = Column(Integer, primary_key=True)
     description = Column(String(250))
-    price = Column(String(8))
-    course = Column(String(250))
-    restaurant_id = Column(Integer, ForeignKey('restaurant.id'))
-    restaurant = relationship(Restaurant)
+    author = Column(String(250))
+    category_id = Column(Integer, ForeignKey('category.id'))
+    category = relationship(Category)
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship(User)    
 
@@ -53,9 +53,10 @@ class MenuItem(Base):
             'description': self.description,
             'price': self.price,
             'course': self.course,
-            'restaurant_id': self.restaurant_id
+            'restaurant_id': self.restaurant_id,
+            'user_id': self.user_id
         }
 
 
-engine = create_engine('sqlite:///restaurantmenuwithusers.db')
+engine = create_engine('sqlite:///booksapp.db')
 Base.metadata.create_all(engine)

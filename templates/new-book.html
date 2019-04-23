@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}">
+  <title>Add new book</title>
+</head>
+<body>
+  <h1>Add new book on {{category.name}} category</h1>
+  <form action="{{url_for('add_book', category_id=category.id)}}" method="post">
+    <input type="text" placeholder="book name" name="book_name"><br>
+    <input type="text" placeholder="book description" name="book_description"><br>
+    <input type="text" placeholder="book author" name="book_author"><br><br>
+    <input type="submit" value="Submit">
+    <a href="{{url_for('show_books', category_id=category.id)}}">Cancel</a>
+  </form>
+</body>
+</html>

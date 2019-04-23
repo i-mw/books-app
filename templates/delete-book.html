@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}">
-  <title>delete menu item</title>
+  <title>delete book</title>
 </head>
 <body>
-  <h1>Confirm that you want to delete {{item.name}} item on {{restaurant.name}} restaurant</h1>
-  <form action="{{url_for('delete_item', restaurant_id=restaurant.id, menu_id=item.id)}}" method="post">
+  <h1>Confirm that you want to delete {{book.name}} book on {{category.name}} category</h1>
+  <form action="{{url_for('delete_book', category_id=category.id, book_id=book.id)}}" method="post">
     <input type="submit" value="Delete">
-    <a href="{{url_for('show_menu', restaurant_id=restaurant.id)}}">Cancel</a>
+    <a href="{{url_for('show_books', category_id=category.id)}}">Cancel</a>
   </form>
 </body>
 </html>

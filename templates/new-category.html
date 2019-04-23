@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}">''
-  <title>Add new restaurant</title>
+  <title>Add new category</title>
 </head>
 <body>
-  <h1>Add new restaurant</h1>
-  <form action="{{url_for('add_restaurant')}}" method="post">
-    <input type="text" placeholder="insert new restaurant name" name="restaurant_name">
+  <h1>Add new category</h1>
+  <form action="{{url_for('add_category')}}" method="post">
+    <input type="text" placeholder="insert new category name" name="category_name">
     <input type="submit" value="Submit">
-    <a href="{{url_for('show_restaurants')}}">Cancel</a>
+    <a href="{{url_for('show_categories')}}">Cancel</a>
   </form>
 </body>
 </html>

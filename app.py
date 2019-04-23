@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, request, redirect, jsonify, flash, session as login_session
 import random, string
-from database_setup import Base, Restaurant, MenuItem, User
+from database_setup import Base, Category, Book, User
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 
@@ -10,7 +10,7 @@ from oauth2client.client import FlowExchangeError
 import json
 import requests
 
-engine = create_engine('sqlite:///restaurantmenuwithusers.db')
+engine = create_engine('sqlite:///booksapp.db')
 Base.metadata.bind = engine
 
 app = Flask(__name__)
@@ -164,167 +164,165 @@ def gdisconnect():
 
 
 @app.route('/')
-@app.route('/restaurants')
-def show_restaurants():
+def show_categories():
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
 
-    restaurants = session.query(Restaurant).all()
+    categories = session.query(Category).all()
     if 'name' not in login_session:
-        return render_template('publicrestaurants.html', restaurants=restaurants)        
-    return render_template('restaurants-list.html', restaurants=restaurants)
+        return render_template('public-categories-list.html', categories=categories)        
+    return render_template('categories-list.html', categories=categories)
 
 
-@app.route('/restaurant/new', methods=['GET', 'POST'])
-def add_restaurant():
+@app.route('/category/new', methods=['GET', 'POST'])
+def add_category():
     if 'name' not in login_session:
         return redirect('/login')
     if request.method == 'POST':
         DBSession = sessionmaker(bind=engine)
         session = DBSession()
 
-        new_restaurant = Restaurant(name=request.form['restaurant_name'], user_id=login_session['user_id'])
-        session.add(new_restaurant)
+        new_category = Category(name=request.form['category_name'], user_id=login_session['user_id'])
+        session.add(new_category)
         session.commit()
-        flash('New restaurant added successfully!')
+        flash('New category added successfully!')
 
-        return redirect(url_for('show_restaurants'))
+        return redirect(url_for('show_categories'))
     else:
-        return render_template('new-restaurant.html')
+        return render_template('new-category.html')
 
 
-@app.route('/restaurant/<int:restaurant_id>/edit', methods=['GET', 'POST'])
-def edit_restaurant(restaurant_id):
+@app.route('/category/<int:category_id>/edit', methods=['GET', 'POST'])
+def edit_category(category_id):
     if 'name' not in login_session:
         return redirect('/login')    
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
     if request.method == 'POST':
-        restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
-        restaurant.name = request.form['restaurant_name']
-        session.add(restaurant)
+        category = session.query(Category).filter_by(id=category_id).one()
+        category.name = request.form['category_name']
+        session.add(category)
         session.commit()
-        flash('Restaurant name changed successfully!')
+        flash('Category name changed successfully!')
 
-        return redirect(url_for('show_restaurants'))
+        return redirect(url_for('show_categories'))
     else:
-        restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
-        return render_template('edit-restaurant.html', restaurant=restaurant)
+        category = session.query(Category).filter_by(id=category_id).one()
+        return render_template('edit-category.html', category=category)
 
 
-@app.route('/restaurant/<int:restaurant_id>/delete', methods=['GET', 'POST'])
-def delete_restaurant(restaurant_id):
+@app.route('/category/<int:category_id>/delete', methods=['GET', 'POST'])
+def delete_category(category_id):
     if 'name' not in login_session:
         return redirect('/login')    
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
     if request.method == 'POST':
-        restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
-        session.delete(restaurant)
+        category = session.query(Category).filter_by(id=category_id).one()
+        session.delete(category)
         session.commit()
-        flash('Restaurant deleted successfully!')
+        flash('Category deleted successfully!')
 
-        return redirect(url_for('show_restaurants'))
+        return redirect(url_for('show_categories'))
     else:
-        restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
-        return render_template('delete-restaurant.html', restaurant=restaurant)
+        category = session.query(Category).filter_by(id=category_id).one()
+        return render_template('delete-category.html', category=category)
 
 
-@app.route('/restaurant/<int:restaurant_id>/')
-@app.route('/restaurant/<int:restaurant_id>/menu')
-def show_menu(restaurant_id):
+@app.route('/category/<int:category_id>/books')
+def show_books(category_id):
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
 
-    restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
-    items=session.query(MenuItem).filter_by(restaurant_id=restaurant_id)
-    return render_template('menu-items.html', restaurant=restaurant, items=items)
+    category = session.query(Category).filter_by(id=category_id).one()
+    books=session.query(Book).filter_by(category_id=category_id)
+    return render_template('category-books.html', category=category, books=books)
 
     
-@app.route('/restaurant/<int:restaurant_id>/menu/new', methods=['GET', 'POST'])
-def add_item(restaurant_id):
+@app.route('/category/<int:category_id>/books/new', methods=['GET', 'POST'])
+def add_book(category_id):
     if 'name' not in login_session:
         return redirect('/login')    
     DBSession = sessionmaker(bind=engine)
     session = DBSession()    
     if request.method == 'POST':
-        new_item = MenuItem(name=request.form['item_name'],
-                            description=request.form['item_description'],
-                            price=request.form['item_price'],
-                            restaurant_id=restaurant_id)
-        session.add(new_item)
+        new_book = Book(name=request.form['book_name'],
+                            description=request.form['book_description'],
+                            author=request.form['book_author'],
+                            category_id=category_id)
+        session.add(new_book)
         session.commit()
-        flash('Menu item added successfully!')
-        return redirect(url_for('show_menu', restaurant_id=restaurant_id))
+        flash('Book added successfully!')
+        return redirect(url_for('show_books', category_id=category_id))
     else:
-        restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
-        return render_template('new-item.html', restaurant=restaurant)
+        category = session.query(Category).filter_by(id=category_id).one()
+        return render_template('new-book.html', category=category)
 
 
-@app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/edit', methods=['GET', 'POST'])
-def edit_item(restaurant_id, menu_id):
+@app.route('/category/<int:category_id>/book/<int:book_id>/edit', methods=['GET', 'POST'])
+def edit_book(category_id, book_id):
     if 'name' not in login_session:
         return redirect('/login')    
     DBSession = sessionmaker(bind=engine)
     session = DBSession()    
     if request.method == 'POST':
-        item = session.query(MenuItem).filter_by(id=menu_id).one()
-        item.name = request.form['item_name']
-        item.description = request.form['item_description']
-        item.price = request.form['item_price']
+        book = session.query(Book).filter_by(id=book_id).one()
+        book.name = request.form['book_name']
+        book.description = request.form['book_description']
+        book.author = request.form['book_price']
 
-        session.add(item)
+        session.add(book)
         session.commit()
-        flash('Menu item edited successfully!')
-        return redirect(url_for('show_menu', restaurant_id=restaurant_id))
+        flash('Book edited successfully!')
+        return redirect(url_for('show_books', category_id=category_id))
     else:
-        restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
-        item = session.query(MenuItem).filter_by(id=menu_id).one()
-        return render_template('edit-item.html', restaurant=restaurant, item=item)
+        category = session.query(Category).filter_by(id=category_id).one()
+        book = session.query(Book).filter_by(id=book_id).one()
+        return render_template('edit-book.html', category=category, book=book)
 
 
-@app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/delete', methods=['GET', 'POST'])
-def delete_item(restaurant_id, menu_id):
+@app.route('/category/<int:category_id>/book/<int:book_id>/delete', methods=['GET', 'POST'])
+def delete_book(category_id, book_id):
     if 'name' not in login_session:
         return redirect('/login')    
     DBSession = sessionmaker(bind=engine)
     session = DBSession()    
     if request.method == 'POST':
-        item = session.query(MenuItem).filter_by(id=menu_id).one()
-        session.delete(item)
+        book = session.query(Book).filter_by(id=book_id).one()
+        session.delete(book)
         session.commit()
-        flash('Menu item deleted successfully')
-        return redirect(url_for('show_menu', restaurant_id=restaurant_id))
+        flash('Book deleted successfully')
+        return redirect(url_for('show_books', category_id=category_id))
     else:
-        restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
-        item = session.query(MenuItem).filter_by(id=menu_id).one()
-        return render_template('delete-item.html', restaurant=restaurant, item=item)
+        category = session.query(Category).filter_by(id=category_id).one()
+        book = session.query(Book).filter_by(id=book_id).one()
+        return render_template('delete-book.html', category=category, book=book)
 
 
 #JSON endpoints
-@app.route('/restaurants/JSON')
-def list_restaurants():
+@app.route('/categories/JSON')
+def list_categories():
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
-    restaurants = session.query(Restaurant).all()
-    return jsonify(restaurants=[rest.serialize for rest in restaurants])
+    categories = session.query(Category).all()
+    return jsonify(categories=[cat.serialize for cat in categories])
 
 
-@app.route('/restaurant/<int:restaurant_id>/menu/JSON')
-def list_menu(restaurant_id):
+@app.route('/category/<int:category_id>/books/JSON')
+def list_category(category_id):
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
-    restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
-    items=session.query(MenuItem).filter_by(restaurant_id=restaurant_id)
-    return jsonify(restaurant=restaurant.serialize, menu=[item.serialize for item in items])
+    category = session.query(Category).filter_by(id=category_id).one()
+    books=session.query(Book).filter_by(category_id=category_id)
+    return jsonify(category=category.serialize, books=[book.serialize for book in books])
 
 
-@app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/JSON')
-def list_one_item(restaurant_id, menu_id):
+@app.route('/category/<int:category_id>/book/<int:book_id>/JSON')
+def list_one_book(category_id, book_id):
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
-    item=session.query(MenuItem).filter_by(id=menu_id).one()
-    return jsonify(menu_item=item.serialize)
+    book=session.query(Book).filter_by(id=book_id).one()
+    return jsonify(book=book.serialize)
 
 
 if __name__ == '__main__':

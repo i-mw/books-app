@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}">
+  <title>Categories</title>
+</head>
+<body>
+  <h1>All Categories</h1>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for message in messages %}
+        <p>{{message}}</p>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}  
+  {% if not(categories) or not(categories[0]) %}
+    <p>No categories available.</p>
+  {% else %}
+    <ul>
+      {% for cat in categories %}
+        <li>
+          <a href="{{url_for('show_books', category_id=cat.id)}}">{{cat.name}}</a><br>
+        </li><br>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</body>
+</html>
