@@ -15,14 +15,52 @@ Base.metadata.bind = engine
 
 app = Flask(__name__)
 
-CLIENT_ID = "150625342836-362i0s186aqmhuf06du3eoogs2t40qna.apps.googleusercontent.com"
+CLIENT_ID = "477649816139-ugpro9dj507g01hrsul4g5m6qeonc8v2.apps.googleusercontent.com"
+
+## helper functions
+def create_user(login_session):
+    DBSession = sessionmaker(bind=engine)
+    session = DBSession()
+
+    new_user = User(name=login_session['name'], email=login_session['email'], picture=login_session['picture'])
+
+    session.add(new_user)
+    session.commit()
+    user = session.query(User).filter_by(email=login_session['email']).one()
+    return user.id
+    
+
+def get_user_info(user_id):    
+    DBSession = sessionmaker(bind=engine)
+    session = DBSession()
+
+    user = session.query(User).filter_by(id=user_id).one()
+    return user
+
+
+def get_user_id(email):
+    try:
+        DBSession = sessionmaker(bind=engine)
+        session = DBSession()
+
+        user = session.query(User).filter_by(email=email).one()
+        return user.id
+    except:
+        return None
+
 
 @app.route('/login')
+@app.route('/logout')
 def show_login():
     state = ''.join([random.choice(string.ascii_uppercase+string.digits) for i in range(32)])
     login_session['state'] = state
+    print('--------------------------------')
     print(login_session)
-    return render_template('login.html', STATE=login_session['state'])
+    print('--------------------------------')
+    if 'name' not in login_session:
+        return render_template('login.html', STATE=login_session['state'])
+    else:
+        return render_template('logout.html')
 
 
 @app.route('/gconnect', methods=['POST'])
@@ -108,37 +146,7 @@ def gconnect():
     return output
 
 
-def create_user(login_session):
-    DBSession = sessionmaker(bind=engine)
-    session = DBSession()
-
-    new_user = User(name=login_session['name'], email=login_session['email'], picture=login_session['picture'])
-
-    session.add(new_user)
-    session.commit()
-    user = session.query(User).filter_by(email=login_session['email']).one()
-    return user.id
-    
-
-def get_user_info(user_id):    
-    DBSession = sessionmaker(bind=engine)
-    session = DBSession()
-
-    user = session.query(User).filter_by(id=user_id).one()
-    return user
-
-
-def get_user_id(email):
-    try:
-        DBSession = sessionmaker(bind=engine)
-        session = DBSession()
-
-        user = session.query(User).filter_by(email=email).one()
-        return user.id
-    except:
-        return None
-
-@app.route('/gdisconnect')
+@app.route('/gdisconnect', methods=['POST'])
 def gdisconnect():
     if login_session.get('access_token') is None:
         response = make_response(json.dumps('no user logged in'), 401)
@@ -153,6 +161,7 @@ def gdisconnect():
         del login_session['name']
         del login_session['email']
         del login_session['picture']
+        del login_session['user_id']
 
         response = make_response(json.dumps('successfully logged out'), 200)
         response.headers['content-type'] = 'application/json'
@@ -164,6 +173,7 @@ def gdisconnect():
 
 
 @app.route('/')
+@app.route('/categories')
 def show_categories():
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
@@ -270,7 +280,7 @@ def edit_book(category_id, book_id):
         book = session.query(Book).filter_by(id=book_id).one()
         book.name = request.form['book_name']
         book.description = request.form['book_description']
-        book.author = request.form['book_price']
+        book.author = request.form['book_author']
 
         session.add(book)
         session.commit()
@@ -301,6 +311,7 @@ def delete_book(category_id, book_id):
 
 
 #JSON endpoints
+@app.route('/JSON')
 @app.route('/categories/JSON')
 def list_categories():
     DBSession = sessionmaker(bind=engine)
