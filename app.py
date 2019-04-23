@@ -179,15 +179,15 @@ def show_categories():
     session = DBSession()
 
     categories = session.query(Category).all()
-    # if 'name' not in login_session:
-    #     return render_template('public-categories-list.html', categories=categories)        
+    if 'name' not in login_session:
+        return render_template('public-categories-list.html', categories=categories)        
     return render_template('categories-list.html', categories=categories)
 
 
 @app.route('/category/new', methods=['GET', 'POST'])
 def add_category():
-    # if 'name' not in login_session:
-    #     return redirect('/login')
+    if 'name' not in login_session:
+        return redirect('/login')
     if request.method == 'POST':
         DBSession = sessionmaker(bind=engine)
         session = DBSession()
@@ -205,8 +205,8 @@ def add_category():
 
 @app.route('/category/<int:category_id>/edit', methods=['GET', 'POST'])
 def edit_category(category_id):
-    # if 'name' not in login_session:
-    #     return redirect('/login')    
+    if 'name' not in login_session:
+        return redirect('/login')    
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
     if request.method == 'POST':
@@ -224,8 +224,8 @@ def edit_category(category_id):
 
 @app.route('/category/<int:category_id>/delete', methods=['GET', 'POST'])
 def delete_category(category_id):
-    # if 'name' not in login_session:
-    #     return redirect('/login')    
+    if 'name' not in login_session:
+        return redirect('/login')    
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
     if request.method == 'POST':
@@ -247,13 +247,15 @@ def show_books(category_id):
 
     category = session.query(Category).filter_by(id=category_id).one()
     books=session.query(Book).filter_by(category_id=category_id)
+    if 'name' not in login_session:
+        return render_template('public-category-books.html', category=category, books=books) 
     return render_template('category-books.html', category=category, books=books)
 
     
 @app.route('/category/<int:category_id>/books/new', methods=['GET', 'POST'])
 def add_book(category_id):
-    # if 'name' not in login_session:
-    #     return redirect('/login')    
+    if 'name' not in login_session:
+        return redirect('/login')    
     DBSession = sessionmaker(bind=engine)
     session = DBSession()    
     if request.method == 'POST':
@@ -272,8 +274,8 @@ def add_book(category_id):
 
 @app.route('/category/<int:category_id>/book/<int:book_id>/edit', methods=['GET', 'POST'])
 def edit_book(category_id, book_id):
-    # if 'name' not in login_session:
-    #     return redirect('/login')    
+    if 'name' not in login_session:
+        return redirect('/login')    
     DBSession = sessionmaker(bind=engine)
     session = DBSession()    
     if request.method == 'POST':
@@ -294,8 +296,8 @@ def edit_book(category_id, book_id):
 
 @app.route('/category/<int:category_id>/book/<int:book_id>/delete', methods=['GET', 'POST'])
 def delete_book(category_id, book_id):
-    # if 'name' not in login_session:
-    #     return redirect('/login')    
+    if 'name' not in login_session:
+        return redirect('/login')    
     DBSession = sessionmaker(bind=engine)
     session = DBSession()    
     if request.method == 'POST':
