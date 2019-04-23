@@ -192,8 +192,7 @@ def add_category():
         DBSession = sessionmaker(bind=engine)
         session = DBSession()
 
-        #, user_id=login_session['user_id']
-        new_category = Category(name=request.form['category_name'])
+        new_category = Category(name=request.form['category_name'], user_id=login_session['user_id'])
         session.add(new_category)
         session.commit()
         flash('New category added successfully!')
@@ -211,6 +210,8 @@ def edit_category(category_id):
     session = DBSession()
     if request.method == 'POST':
         category = session.query(Category).filter_by(id=category_id).one()
+        if category.user_id != login_session['user_id']:
+            return "<script>function myFunction() {alert('You are not authorized to edit this category. Create your own category')}</script><body onload='myFunction()'>"
         category.name = request.form['category_name']
         session.add(category)
         session.commit()
@@ -230,6 +231,9 @@ def delete_category(category_id):
     session = DBSession()
     if request.method == 'POST':
         category = session.query(Category).filter_by(id=category_id).one()
+        if category.user_id != login_session['user_id']:
+            return "<script>function myFunction() {alert('You are not authorized to delete this category. Create your own category')}</script><body onload='myFunction()'>"
+
         session.delete(category)
         session.commit()
         flash('Category deleted successfully!')
@@ -262,7 +266,8 @@ def add_book(category_id):
         new_book = Book(name=request.form['book_name'],
                             description=request.form['book_description'],
                             author=request.form['book_author'],
-                            category_id=category_id)
+                            category_id=category_id,
+                            user_id=login_session['user_id'])
         session.add(new_book)
         session.commit()
         flash('Book added successfully!')
@@ -280,6 +285,8 @@ def edit_book(category_id, book_id):
     session = DBSession()    
     if request.method == 'POST':
         book = session.query(Book).filter_by(id=book_id).one()
+        if book.user_id != login_session['user_id']:
+            return "<script>function myFunction() {alert('You are not authorized to edit this book. Create your own book')}</script><body onload='myFunction()'>"        
         book.name = request.form['book_name']
         book.description = request.form['book_description']
         book.author = request.form['book_author']
@@ -302,6 +309,8 @@ def delete_book(category_id, book_id):
     session = DBSession()    
     if request.method == 'POST':
         book = session.query(Book).filter_by(id=book_id).one()
+        if book.user_id != login_session['user_id']:
+            return "<script>function myFunction() {alert('You are not authorized to delete this book. Create your own book')}</script><body onload='myFunction()'>"        
         session.delete(book)
         session.commit()
         flash('Book deleted successfully')
