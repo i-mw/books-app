@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Logout</title>
+</head>
+<body>
+  <button onclick="logout()">Log Out </button>
+  <div id="result"></div>
+  <script>
+    function logout() {
+      fetch('/gdisconnect', {
+          method: 'POST'
+        })
+      .then(function(response) {
+        if (response.status === 200) {
+          return response.text().then(function(body) {
+            result.innerHTML = body + "<br> redirecting...";
+            setTimeout(function() {
+              window.location.href="/"
+            }, 2000)
+          })
+        } else {
+          console.log(response.statusText)
+        }
+      })
+      .catch(function(error) {
+      })      
+    }
+  </script>
+</body>
+</html>
