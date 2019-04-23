@@ -51,9 +51,8 @@ class Book(Base):
             'name': self.name,
             'id': self.id,
             'description': self.description,
-            'price': self.price,
-            'course': self.course,
-            'restaurant_id': self.restaurant_id,
+            'author': self.author,
+            'category_id': self.category_id,
             'user_id': self.user_id
         }
 
