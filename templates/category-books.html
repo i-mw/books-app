@@ -23,9 +23,9 @@
     <ul>
       {% for book in books %}
         <li>
-          <p>{{book.name}}</p>
-          <p>{{book.description}}</p>
-          <p>{{book.author}}</p>
+          <p>Title: {{book.name}}</p>
+          <p>Description: {{book.description}}</p>
+          <p>Author: {{book.author}}</p>
           <a href="{{url_for('edit_book', category_id=category.id, book_id=book.id)}}">edit</a>&nbsp;&nbsp;
           <a href="{{url_for('delete_book', category_id=category.id, book_id=book.id)}}">delete</a>
         </li><br>
