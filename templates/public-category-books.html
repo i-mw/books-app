@@ -8,7 +8,14 @@
   <link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}">
 </head>
 <body>
-  <h1>{{category.name}} books</h1>
+  <h1><a href="{{url_for('show_categories')}}">Books app</a></h1>
+  {% if 'name' in login_session %}
+    <span>{{login_session.name}}.. </span><a href="{{url_for('show_login')}}">Logout</a>
+  {% else%}
+    <a href="{{url_for('show_login')}}">Login</a>
+  {% endif %}
+  <hr>  
+  <h2>{{category.name}} books</h2>
   {% with messages = get_flashed_messages() %}
     {% if messages %}
       {% for message in messages %}
@@ -22,9 +29,9 @@
     <ul>
       {% for book in books %}
         <li>
-          <p>{{book.name}}</p>
-          <p>{{book.description}}</p>
-          <p>{{book.author}}</p>
+          <p>Title: {{book.name}}</p>
+          <p>Description: {{book.description}}</p>
+          <p>Author: {{book.author}}</p>
         </li><br>
       {% endfor %}
     </ul>

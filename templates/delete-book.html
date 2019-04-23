@@ -8,7 +8,14 @@
   <title>delete book</title>
 </head>
 <body>
-  <h1>Confirm that you want to delete {{book.name}} book on {{category.name}} category</h1>
+  <h1><a href="{{url_for('show_categories')}}">Books app</a></h1>
+  {% if 'name' in login_session %}
+    <span>{{login_session.name}}.. </span><a href="{{url_for('show_login')}}">Logout</a>
+  {% else%}
+    <a href="{{url_for('show_login')}}">Login</a>
+  {% endif %}
+  <hr>  
+  <h2>Confirm that you want to delete {{book.name}} book on {{category.name}} category</h2>
   <form action="{{url_for('delete_book', category_id=category.id, book_id=book.id)}}" method="post">
     <input type="submit" value="Delete">
     <a href="{{url_for('show_books', category_id=category.id)}}">Cancel</a>

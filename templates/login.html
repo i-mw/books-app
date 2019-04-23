@@ -6,6 +6,11 @@
   <script src="//apis.google.com/js/platform.js?onload=init" async defer></script>
 </head>
 <body>
+  <h1><a href="{{url_for('show_categories')}}">Books app</a></h1>
+  {% if 'name' in login_session %}
+    <span>{{login_session.name}}.. </span><a href="{{url_for('show_login')}}">Logout</a>
+  {% endif %}
+  <hr>  
   <div class="g-signin2"
     data-onsuccess="onSignIn"
     data-onfailure="onSignInFailure"

@@ -7,6 +7,13 @@
   <title>Logout</title>
 </head>
 <body>
+  <h1><a href="{{url_for('show_categories')}}">Books app</a></h1>
+  {% if 'name' in login_session %}
+    <span>{{login_session.name}}.. </span>
+  {% else%}
+    <a href="{{url_for('show_login')}}">Login</a>
+  {% endif %}
+  <hr>  
   <button onclick="logout()">Log Out </button>
   <div id="result"></div>
   <script>

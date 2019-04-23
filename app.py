@@ -58,9 +58,9 @@ def show_login():
     print(login_session)
     print('--------------------------------')
     if 'name' not in login_session:
-        return render_template('login.html', STATE=login_session['state'])
+        return render_template('login.html', STATE=login_session['state'], login_session=login_session)
     else:
-        return render_template('logout.html')
+        return render_template('logout.html', login_session=login_session)
 
 
 @app.route('/gconnect', methods=['POST'])
@@ -165,6 +165,7 @@ def gdisconnect():
 
         response = make_response(json.dumps('successfully logged out'), 200)
         response.headers['content-type'] = 'application/json'
+        flash("You're logged out")
         return response
     else:
         response = make_response(json.dumps("couldn't log you out"), 400)
@@ -180,8 +181,8 @@ def show_categories():
 
     categories = session.query(Category).all()
     if 'name' not in login_session:
-        return render_template('public-categories-list.html', categories=categories)        
-    return render_template('categories-list.html', categories=categories)
+        return render_template('public-categories-list.html', categories=categories, login_session=login_session)        
+    return render_template('categories-list.html', categories=categories, login_session=login_session)
 
 
 @app.route('/category/new', methods=['GET', 'POST'])
@@ -199,7 +200,7 @@ def add_category():
 
         return redirect(url_for('show_categories'))
     else:
-        return render_template('new-category.html')
+        return render_template('new-category.html', login_session=login_session)
 
 
 @app.route('/category/<int:category_id>/edit', methods=['GET', 'POST'])
@@ -220,7 +221,7 @@ def edit_category(category_id):
         return redirect(url_for('show_categories'))
     else:
         category = session.query(Category).filter_by(id=category_id).one()
-        return render_template('edit-category.html', category=category)
+        return render_template('edit-category.html', category=category, login_session=login_session)
 
 
 @app.route('/category/<int:category_id>/delete', methods=['GET', 'POST'])
@@ -241,7 +242,7 @@ def delete_category(category_id):
         return redirect(url_for('show_categories'))
     else:
         category = session.query(Category).filter_by(id=category_id).one()
-        return render_template('delete-category.html', category=category)
+        return render_template('delete-category.html', category=category, login_session=login_session)
 
 
 @app.route('/category/<int:category_id>/books')
@@ -252,8 +253,8 @@ def show_books(category_id):
     category = session.query(Category).filter_by(id=category_id).one()
     books=session.query(Book).filter_by(category_id=category_id)
     if 'name' not in login_session:
-        return render_template('public-category-books.html', category=category, books=books) 
-    return render_template('category-books.html', category=category, books=books)
+        return render_template('public-category-books.html', category=category, books=books, login_session=login_session) 
+    return render_template('category-books.html', category=category, books=books, login_session=login_session)
 
     
 @app.route('/category/<int:category_id>/books/new', methods=['GET', 'POST'])
@@ -274,7 +275,7 @@ def add_book(category_id):
         return redirect(url_for('show_books', category_id=category_id))
     else:
         category = session.query(Category).filter_by(id=category_id).one()
-        return render_template('new-book.html', category=category)
+        return render_template('new-book.html', category=category, login_session=login_session)
 
 
 @app.route('/category/<int:category_id>/book/<int:book_id>/edit', methods=['GET', 'POST'])
@@ -298,7 +299,7 @@ def edit_book(category_id, book_id):
     else:
         category = session.query(Category).filter_by(id=category_id).one()
         book = session.query(Book).filter_by(id=book_id).one()
-        return render_template('edit-book.html', category=category, book=book)
+        return render_template('edit-book.html', category=category, book=book, login_session=login_session)
 
 
 @app.route('/category/<int:category_id>/book/<int:book_id>/delete', methods=['GET', 'POST'])
@@ -318,7 +319,7 @@ def delete_book(category_id, book_id):
     else:
         category = session.query(Category).filter_by(id=category_id).one()
         book = session.query(Book).filter_by(id=book_id).one()
-        return render_template('delete-book.html', category=category, book=book)
+        return render_template('delete-book.html', category=category, book=book, login_session=login_session)
 
 
 #JSON endpoints
