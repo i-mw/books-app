@@ -212,7 +212,7 @@ def edit_category(category_id):
     if request.method == 'POST':
         category = session.query(Category).filter_by(id=category_id).one()
         if category.user_id != login_session['user_id']:
-            return "<script>function myFunction() {alert('You are not authorized to edit this category. Create your own category')}</script><body onload='myFunction()'>"
+            return "You're not authorized to perform this action"
         category.name = request.form['category_name']
         session.add(category)
         session.commit()
@@ -221,6 +221,8 @@ def edit_category(category_id):
         return redirect(url_for('show_categories'))
     else:
         category = session.query(Category).filter_by(id=category_id).one()
+        if category.user_id != login_session['user_id']:
+            return "You're not authorized to perform this action"
         return render_template('edit-category.html', category=category, login_session=login_session)
 
 
@@ -233,8 +235,7 @@ def delete_category(category_id):
     if request.method == 'POST':
         category = session.query(Category).filter_by(id=category_id).one()
         if category.user_id != login_session['user_id']:
-            return "<script>function myFunction() {alert('You are not authorized to delete this category. Create your own category')}</script><body onload='myFunction()'>"
-
+            return "You're not authorized to perform this action"
         session.delete(category)
         session.commit()
         flash('Category deleted successfully!')
@@ -242,6 +243,8 @@ def delete_category(category_id):
         return redirect(url_for('show_categories'))
     else:
         category = session.query(Category).filter_by(id=category_id).one()
+        if category.user_id != login_session['user_id']:
+            return "You're not authorized to perform this action"
         return render_template('delete-category.html', category=category, login_session=login_session)
 
 
@@ -287,7 +290,7 @@ def edit_book(category_id, book_id):
     if request.method == 'POST':
         book = session.query(Book).filter_by(id=book_id).one()
         if book.user_id != login_session['user_id']:
-            return "<script>function myFunction() {alert('You are not authorized to edit this book. Create your own book')}</script><body onload='myFunction()'>"        
+            return "You're not authorized to perform this action"
         book.name = request.form['book_name']
         book.description = request.form['book_description']
         book.author = request.form['book_author']
@@ -299,6 +302,8 @@ def edit_book(category_id, book_id):
     else:
         category = session.query(Category).filter_by(id=category_id).one()
         book = session.query(Book).filter_by(id=book_id).one()
+        if book.user_id != login_session['user_id']:
+            return "You're not authorized to perform this action"
         return render_template('edit-book.html', category=category, book=book, login_session=login_session)
 
 
@@ -311,7 +316,7 @@ def delete_book(category_id, book_id):
     if request.method == 'POST':
         book = session.query(Book).filter_by(id=book_id).one()
         if book.user_id != login_session['user_id']:
-            return "<script>function myFunction() {alert('You are not authorized to delete this book. Create your own book')}</script><body onload='myFunction()'>"        
+            return "You're not authorized to perform this action"
         session.delete(book)
         session.commit()
         flash('Book deleted successfully')
@@ -319,6 +324,8 @@ def delete_book(category_id, book_id):
     else:
         category = session.query(Category).filter_by(id=category_id).one()
         book = session.query(Book).filter_by(id=book_id).one()
+        if book.user_id != login_session['user_id']:
+            return "You're not authorized to perform this action"
         return render_template('delete-book.html', category=category, book=book, login_session=login_session)
 
 

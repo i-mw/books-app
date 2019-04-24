@@ -33,8 +33,10 @@
           <p>Title: {{book.name}}</p>
           <p>Description: {{book.description}}</p>
           <p>Author: {{book.author}}</p>
+          {% if book.user_id == login_session.user_id %}
           <a href="{{url_for('edit_book', category_id=category.id, book_id=book.id)}}">edit</a>&nbsp;&nbsp;
           <a href="{{url_for('delete_book', category_id=category.id, book_id=book.id)}}">delete</a>
+          {% endif %}
         </li><br>
       {% endfor %}
     </ul>
