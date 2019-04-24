@@ -28,9 +28,9 @@ def create_user(login_session):
     session.commit()
     user = session.query(User).filter_by(email=login_session['email']).one()
     return user.id
-    
 
-def get_user_info(user_id):    
+
+def get_user_info(user_id):
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
 
@@ -56,7 +56,7 @@ def show_login():
     state = ''.join([random.choice(string.ascii_uppercase+string.digits) for i in range(32)])
     login_session['state'] = state
     if 'name' not in login_session:
-        # no user logged in 
+        # no user logged in
         return render_template('login.html', STATE=login_session['state'], login_session=login_session)
     else:
         # user logged in
@@ -106,7 +106,7 @@ def gconnect():
     if CLIENT_ID != token_info['issued_to']:
         response = make_response(json.dumps('Access token for different app'), 401)
         response.headers['content-type'] = 'application/json'
-        return response        
+        return response
 
     #5th check - not already logged in
     stored_access_token = login_session.get('access_token')
@@ -179,7 +179,7 @@ def gdisconnect():
     else:
         response = make_response(json.dumps("couldn't log you out"), 400)
         response.headers['content-type'] = 'application/json'
-        return response        
+        return response
 
 # home page/show book categories
 @app.route('/')
@@ -191,7 +191,7 @@ def show_categories():
     categories = session.query(Category).all()
     if 'name' not in login_session:
         # no user is logged in
-        return render_template('public-categories-list.html', categories=categories, login_session=login_session)        
+        return render_template('public-categories-list.html', categories=categories, login_session=login_session)
     return render_template('categories-list.html', categories=categories, login_session=login_session)
 
 
@@ -222,7 +222,7 @@ def add_category():
 def edit_category(category_id):
     if 'name' not in login_session:
         # no user is logged in
-        return redirect('/login')    
+        return redirect('/login')
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
     if request.method == 'POST':
@@ -251,7 +251,7 @@ def edit_category(category_id):
 def delete_category(category_id):
     if 'name' not in login_session:
         # no user is logged in
-        return redirect('/login')    
+        return redirect('/login')
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
     if request.method == 'POST':
@@ -284,7 +284,7 @@ def show_books(category_id):
     books=session.query(Book).filter_by(category_id=category_id)
     if 'name' not in login_session:
         # no user is logged in
-        return render_template('public-category-books.html', category=category, books=books, login_session=login_session) 
+        return render_template('public-category-books.html', category=category, books=books, login_session=login_session)
     return render_template('category-books.html', category=category, books=books, login_session=login_session)
 
 
@@ -293,9 +293,9 @@ def show_books(category_id):
 def add_book(category_id):
     if 'name' not in login_session:
         # no user is logged in
-        return redirect('/login')    
+        return redirect('/login')
     DBSession = sessionmaker(bind=engine)
-    session = DBSession()    
+    session = DBSession()
     if request.method == 'POST':
         # Post request
         new_book = Book(name=request.form['book_name'],
@@ -318,9 +318,9 @@ def add_book(category_id):
 def edit_book(category_id, book_id):
     if 'name' not in login_session:
         # no user is logged in
-        return redirect('/login')    
+        return redirect('/login')
     DBSession = sessionmaker(bind=engine)
-    session = DBSession()    
+    session = DBSession()
     if request.method == 'POST':
         # Post request
         book = session.query(Book).filter_by(id=book_id).one()
@@ -350,9 +350,9 @@ def edit_book(category_id, book_id):
 def delete_book(category_id, book_id):
     if 'name' not in login_session:
         # no logged in user
-        return redirect('/login')    
+        return redirect('/login')
     DBSession = sessionmaker(bind=engine)
-    session = DBSession()    
+    session = DBSession()
     if request.method == 'POST':
         # Post request
         book = session.query(Book).filter_by(id=book_id).one()
