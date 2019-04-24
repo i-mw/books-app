@@ -17,7 +17,7 @@ app = Flask(__name__)
 
 CLIENT_ID = "477649816139-ugpro9dj507g01hrsul4g5m6qeonc8v2.apps.googleusercontent.com"
 
-## helper functions
+### helper functions ###
 def create_user(login_session):
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
@@ -48,24 +48,25 @@ def get_user_id(email):
     except:
         return None
 
-
+### routes ####
+# login/out page
 @app.route('/login')
 @app.route('/logout')
 def show_login():
     state = ''.join([random.choice(string.ascii_uppercase+string.digits) for i in range(32)])
     login_session['state'] = state
-    print('--------------------------------')
-    print(login_session)
-    print('--------------------------------')
     if 'name' not in login_session:
+        # no user logged in 
         return render_template('login.html', STATE=login_session['state'], login_session=login_session)
     else:
+        # user logged in
         return render_template('logout.html', login_session=login_session)
 
 
+# login using Google Oauth
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
-    #1st check - state token
+    #1st check - state token is the same
     if request.args['state'] != login_session['state']:
         response = make_response(json.dumps("Invalid state parameter"), 401)
         response.headers['content-type'] = 'application/json'
@@ -73,6 +74,7 @@ def gconnect():
 
 
     try:
+        # Exchange auth  one-time code with credentials object which contains access token
         code = request.data
         oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
         oauth_flow.redirect_uri = 'postmessage'
@@ -82,6 +84,7 @@ def gconnect():
         response.headers['content-type'] = 'application/json'
         return response
 
+    # Make request to tokeninfo api
     access_token = credentials.access_token
     google_id = credentials.id_token['sub']
     r = requests.get('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={}'.format(access_token))
@@ -116,6 +119,7 @@ def gconnect():
     login_session['access_token'] = access_token
     login_session['google_id'] = google_id
 
+    # Get user info using access token
     params = {
         'access_token': access_token,
         'alt': 'json'
@@ -123,11 +127,12 @@ def gconnect():
     r = requests.get('https://www.googleapis.com/oauth2/v1/userinfo', params=params)
     user_info = r.json()
 
+    # Store user info on login_session
     login_session['name'] = user_info['name']
     login_session['picture'] = user_info['picture']
     login_session['email'] = user_info['email']
 
-    #Check the user in the database
+    # Retrieve or Create the user on the database
     user_id = get_user_id(login_session['email'])
     if user_id is None:
         user_id = create_user(login_session)
@@ -146,15 +151,19 @@ def gconnect():
     return output
 
 
+#Logout from Google Oauth
 @app.route('/gdisconnect', methods=['POST'])
 def gdisconnect():
+    # There's an access_token on login_session?
     if login_session.get('access_token') is None:
         response = make_response(json.dumps('no user logged in'), 401)
         response.headers['content-type'] = 'application/json'
         return response
 
+    # Revoke the access token from google servers
     r = requests.get('https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['access_token'])
 
+    # Remove user info from login_session
     if r.status_code == 200:
         del login_session['access_token']
         del login_session['google_id']
@@ -172,7 +181,7 @@ def gdisconnect():
         response.headers['content-type'] = 'application/json'
         return response        
 
-
+# home page/show book categories
 @app.route('/')
 @app.route('/categories')
 def show_categories():
@@ -181,15 +190,19 @@ def show_categories():
 
     categories = session.query(Category).all()
     if 'name' not in login_session:
+        # no user is logged in
         return render_template('public-categories-list.html', categories=categories, login_session=login_session)        
     return render_template('categories-list.html', categories=categories, login_session=login_session)
 
 
+# Add a book category page
 @app.route('/category/new', methods=['GET', 'POST'])
 def add_category():
     if 'name' not in login_session:
+        # no user is logged in
         return redirect('/login')
     if request.method == 'POST':
+        # Post request
         DBSession = sessionmaker(bind=engine)
         session = DBSession()
 
@@ -200,18 +213,23 @@ def add_category():
 
         return redirect(url_for('show_categories'))
     else:
+        # Get request
         return render_template('new-category.html', login_session=login_session)
 
 
+# Edit a book category page
 @app.route('/category/<int:category_id>/edit', methods=['GET', 'POST'])
 def edit_category(category_id):
     if 'name' not in login_session:
+        # no user is logged in
         return redirect('/login')    
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
     if request.method == 'POST':
+        # Post request
         category = session.query(Category).filter_by(id=category_id).one()
         if category.user_id != login_session['user_id']:
+            # logged in user isn't the creator of this category
             return "You're not authorized to perform this action"
         category.name = request.form['category_name']
         session.add(category)
@@ -220,21 +238,27 @@ def edit_category(category_id):
 
         return redirect(url_for('show_categories'))
     else:
+        # Get request
         category = session.query(Category).filter_by(id=category_id).one()
         if category.user_id != login_session['user_id']:
+            # logged in user isn't the creator of this category
             return "You're not authorized to perform this action"
         return render_template('edit-category.html', category=category, login_session=login_session)
 
 
+# Delete a book category page
 @app.route('/category/<int:category_id>/delete', methods=['GET', 'POST'])
 def delete_category(category_id):
     if 'name' not in login_session:
+        # no user is logged in
         return redirect('/login')    
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
     if request.method == 'POST':
+        # Post request
         category = session.query(Category).filter_by(id=category_id).one()
         if category.user_id != login_session['user_id']:
+            # logged in user isn't the creator of this category
             return "You're not authorized to perform this action"
         session.delete(category)
         session.commit()
@@ -242,12 +266,15 @@ def delete_category(category_id):
 
         return redirect(url_for('show_categories'))
     else:
+        # Get request
         category = session.query(Category).filter_by(id=category_id).one()
         if category.user_id != login_session['user_id']:
+            # logged in user isn't the creator of this category
             return "You're not authorized to perform this action"
         return render_template('delete-category.html', category=category, login_session=login_session)
 
 
+# books in a category page
 @app.route('/category/<int:category_id>/books')
 def show_books(category_id):
     DBSession = sessionmaker(bind=engine)
@@ -256,17 +283,21 @@ def show_books(category_id):
     category = session.query(Category).filter_by(id=category_id).one()
     books=session.query(Book).filter_by(category_id=category_id)
     if 'name' not in login_session:
+        # no user is logged in
         return render_template('public-category-books.html', category=category, books=books, login_session=login_session) 
     return render_template('category-books.html', category=category, books=books, login_session=login_session)
 
-    
+
+# Add book to a category page
 @app.route('/category/<int:category_id>/books/new', methods=['GET', 'POST'])
 def add_book(category_id):
     if 'name' not in login_session:
+        # no user is logged in
         return redirect('/login')    
     DBSession = sessionmaker(bind=engine)
     session = DBSession()    
     if request.method == 'POST':
+        # Post request
         new_book = Book(name=request.form['book_name'],
                             description=request.form['book_description'],
                             author=request.form['book_author'],
@@ -277,19 +308,24 @@ def add_book(category_id):
         flash('Book added successfully!')
         return redirect(url_for('show_books', category_id=category_id))
     else:
+        # Get request
         category = session.query(Category).filter_by(id=category_id).one()
         return render_template('new-book.html', category=category, login_session=login_session)
 
 
+# Edit book page
 @app.route('/category/<int:category_id>/book/<int:book_id>/edit', methods=['GET', 'POST'])
 def edit_book(category_id, book_id):
     if 'name' not in login_session:
+        # no user is logged in
         return redirect('/login')    
     DBSession = sessionmaker(bind=engine)
     session = DBSession()    
     if request.method == 'POST':
+        # Post request
         book = session.query(Book).filter_by(id=book_id).one()
         if book.user_id != login_session['user_id']:
+            # logged in user isn't the creator of this book
             return "You're not authorized to perform this action"
         book.name = request.form['book_name']
         book.description = request.form['book_description']
@@ -300,31 +336,39 @@ def edit_book(category_id, book_id):
         flash('Book edited successfully!')
         return redirect(url_for('show_books', category_id=category_id))
     else:
+        # Get request
         category = session.query(Category).filter_by(id=category_id).one()
         book = session.query(Book).filter_by(id=book_id).one()
         if book.user_id != login_session['user_id']:
+            # logged in user isn't the creator of this book
             return "You're not authorized to perform this action"
         return render_template('edit-book.html', category=category, book=book, login_session=login_session)
 
 
+# Delete book page
 @app.route('/category/<int:category_id>/book/<int:book_id>/delete', methods=['GET', 'POST'])
 def delete_book(category_id, book_id):
     if 'name' not in login_session:
+        # no logged in user
         return redirect('/login')    
     DBSession = sessionmaker(bind=engine)
     session = DBSession()    
     if request.method == 'POST':
+        # Post request
         book = session.query(Book).filter_by(id=book_id).one()
         if book.user_id != login_session['user_id']:
+            # logged in user isn't the creator of this book
             return "You're not authorized to perform this action"
         session.delete(book)
         session.commit()
         flash('Book deleted successfully')
         return redirect(url_for('show_books', category_id=category_id))
     else:
+        # Get request
         category = session.query(Category).filter_by(id=category_id).one()
         book = session.query(Book).filter_by(id=book_id).one()
         if book.user_id != login_session['user_id']:
+            # logged in user isn't the creator of this book
             return "You're not authorized to perform this action"
         return render_template('delete-book.html', category=category, book=book, login_session=login_session)
 
