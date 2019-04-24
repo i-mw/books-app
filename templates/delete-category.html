@@ -10,9 +10,9 @@
 <body>
   <h1><a href="{{url_for('show_categories')}}">Books app</a></h1>
   {% if 'name' in login_session %}
-    <span>{{login_session.name}}.. </span><a href="{{url_for('show_login')}}">Logout</a>
+    <span>{{login_session.name}}.. </span><a href="/logout">Logout</a>
   {% else%}
-    <a href="{{url_for('show_login')}}">Login</a>
+    <a href="/login">Login</a>
   {% endif %}
   <hr>  
   <h2>Confirm that you want to delete {{category.name}} category</h2>
